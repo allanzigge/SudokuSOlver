@@ -20,13 +20,24 @@ public class SudokuSolver implements ISudokuSolver {
 		puzzle = new int[size*size][size*size];
 		D = new ArrayList<ArrayList<Integer>>(size*size*size*size);
 		
-		//Initialize each D[X]...
-		
+		puzzle = getPuzzle();
+
+		// initializes domain with all tiles having a domain of 0...9
+		for(int i = 0; i < D.size(); i++) {
+			ArrayList<Integer> Dx = new ArrayList<Integer>();
+			for (int j = 0; j < (size*size +1); j++) {
+				Dx.add(j);
+			}
+			D.set(i, Dx);
+		}
+
+		// todo: remove values from domain coresponding to the given puzzle
 	}
 
 
 	public boolean solve() {
 		ArrayList<Integer> asn = GetAssignment(puzzle);
+		FC(asn); //solving using forward checking
 		
 		//INITIAL_FC
 		//FC
@@ -43,7 +54,27 @@ public class SudokuSolver implements ISudokuSolver {
 		//YOUR TASK:  Implement FC(asn)
 		//---------------------------------------------------------------------------------
 		public ArrayList FC(ArrayList<Integer> asn) {
-	
+			
+			if (!asn.contains(0)) {
+				return asn;
+			}
+
+			int x = asn.indexOf(0); //first empty place
+			ArrayList<ArrayList<Integer>> dOld = new ArrayList<>(D);
+
+			for(Integer v : D.get(x)) {
+				if (AC_FC(x, v)) {
+					asn.set(x, v);
+					var result = FC(asn);
+					if(result != null) {
+						return result;
+					}
+					asn.set(x, 0);
+					D = dOld;
+				} else {
+					D = dOld;
+				}
+			}
 			return null;//failure
 		}
 
@@ -329,7 +360,7 @@ public class SudokuSolver implements ISudokuSolver {
 							//restrict domain
 							D.get(GetVariable(i,j)).clear();
 							D.get(GetVariable(i,j)).add(new Integer(p[i][j]));
-						}
+					}
 				}
 			}
 			return asn;
@@ -356,8 +387,7 @@ public class SudokuSolver implements ISudokuSolver {
 			assert(i>=0 && j>=0);		
 			return (i*size*size + j);	
 		}	
-		
-		
+				
 		public int GetRow(int X){
 			return (X / (size*size)); 	
 		}	
@@ -365,9 +395,5 @@ public class SudokuSolver implements ISudokuSolver {
 		public int GetColumn(int X){
 			return X - ((X / (size*size))*size*size);	
 		}	
-		
-		
-		
-		
-		
+			
 }
